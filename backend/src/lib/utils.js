@@ -1,8 +1,13 @@
 import jwt from 'jsonwebtoken';
 
 export const generateToken = (userId, res) => {
+    // 从环境变量中获取 JWT_SECRET, 并检查是否存在
+    const {JWT_SECRET} = process.env;
+    if(!JWT_SECRET) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
     // 生成 JWT 令牌,7天后过期,用于用户身份验证和会话管理 
-    const token = jwt.sign({userId}, process.env.JWT_SECRET, {
+    const token = jwt.sign({userId}, JWT_SECRET, {
         expiresIn: '7d',
     });
     // 将令牌存储在 HTTP 仅 cookie 中，增强安全性

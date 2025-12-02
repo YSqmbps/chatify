@@ -35,10 +35,10 @@ export const signup = async (req, res) => {
     });
 
     if(newUser) {
+        // 保存用户到数据库
+        const savedUser = await newUser.save();
         // 生成 JWT 令牌
         generateToken(newUser._id, res);
-        // 保存用户到数据库
-        await newUser.save();
         // 返回用户信息（不包括密码）
         res.status(201).json({
           _id: newUser._id,
