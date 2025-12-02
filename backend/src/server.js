@@ -2,12 +2,23 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 
+import authRoutes from './routes/auth.route.js';
+import {connectDB} from './lib/db.js';
+
+
+
 dotenv.config();
 
 const app = express();
 const __dirname = path.resolve();
 
 const PORT = process.env.PORT || 3000;
+
+// 中间件解析 JSON 请求体
+app.use(express.json());
+
+// 使用认证路由
+app.use('/api/auth', authRoutes);
 
 // 生产环境部署的配置 
 if(process.env.NODE_ENV === 'production') {
@@ -22,4 +33,5 @@ if(process.env.NODE_ENV === 'production') {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  connectDB();
 });
