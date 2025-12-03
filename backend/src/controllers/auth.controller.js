@@ -64,3 +64,39 @@ export const signup = async (req, res) => {
     res.status(500).json({ message: '服务器错误' });
   }
 }
+
+export const login = async (req, res) => {
+    const {email, password} = req.body;
+
+    try {
+        // 验证输入
+        if (!email || !password) {
+            return res.status(400).json({ message: '所有字段都是必填项' });
+        }
+        // 查找用户 
+        const user = await User.findOne({email});
+        if(!user) return res.status(400).json({message:'无效的凭证 '});
+        // 比较密码
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if(!isPasswordCorrect)  return res.status(400).json({message:'无效的凭证 '});
+        // 生成 JWT 令牌
+        generateToken(user._id, res);
+        // 返回用户信息（不包括密码）
+        res.status(200).json({
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            profilePic: user.profilePic,
+        });
+        
+    }
+    catch (error) {
+        console.log("Error in login controller: ", error.message);
+        res.status(500).json({ message: '服务器错误' });
+    }
+}
+
+export const logout = (_, res) => {
+    res.cookie("jwt","",{ maxAge: 0 });
+    res.status(200).json({ message: '退出成功' });
+}
