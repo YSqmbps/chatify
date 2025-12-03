@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 
 import { ENV } from './lib/env.js';
@@ -16,6 +17,8 @@ const PORT = ENV.PORT || 3000;
 
 // 中间件解析 JSON 请求体
 app.use(express.json());
+// 中间件解析 Cookie
+app.use(cookieParser());
 
 // 使用认证路由
 app.use('/api/auth', authRoutes);
