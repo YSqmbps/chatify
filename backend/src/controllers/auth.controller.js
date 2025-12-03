@@ -1,7 +1,8 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../lib/utils.js';
-
+import { sendWelcomeEmail } from '../emails/emailHandlers.js';
+import { ENV } from '../lib/env.js';
 
 export const signup = async (req, res) => {
   const {fullName,email, password} = req.body;
@@ -35,10 +36,10 @@ export const signup = async (req, res) => {
     });
 
     if(newUser) {
+        // 保存用户到数据库
+        const savedUser = await newUser.save();
         // 生成 JWT 令牌
         generateToken(newUser._id, res);
-        // 保存用户到数据库
-        await newUser.save();
         // 返回用户信息（不包括密码）
         res.status(201).json({
           _id: newUser._id,
@@ -46,7 +47,15 @@ export const signup = async (req, res) => {
           email: newUser.email,
           profilePic: newUser.profilePic,
         });
-    } else{
+
+        // 发送欢迎邮件
+        try {
+            await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
+        } catch (error) {
+            console.error('发送欢迎邮件时出错:', error.message);
+        }
+
+    } else {
         res.status(400).json({ message: '用户创建失败' });
     }
 
