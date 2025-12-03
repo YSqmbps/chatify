@@ -1,8 +1,12 @@
 import express from 'express';
 import {signup, login, logout, updateProfile} from '../controllers/auth.controller.js';
 import {protectRoute} from '../middleware/auth.middleware.js';
+import {arcjetProtection} from '../middleware/arcjet.middleware.js';
 
 const router = express.Router();
+
+// 在所有认证路由上应用 Arcjet 保护中间件
+router.use(arcjetProtection);
 
 // 注册路由
 router.post('/signup',signup);
