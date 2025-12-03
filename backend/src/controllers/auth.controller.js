@@ -117,7 +117,7 @@ export const updateProfile = async (req, res) => {
             userId,
             { profilePic: uploadResponse.secure_url },
             { new: true } 
-        );
+        ).select('-password'); // 排除密码字段
         // 返回更新后的用户信息
         res.status(200).json(updatedUser);
     } catch (error) {
