@@ -100,3 +100,29 @@ export const logout = (_, res) => {
     res.cookie("jwt","",{ maxAge: 0 });
     res.status(200).json({ message: '退出成功' });
 }
+
+export const updateProfile = async (req, res) => {
+    try {
+        // 
+        const { profilePic } = req.body;
+        if (!profilePic) return res.status(400).json({ message: 'Profile picture is required' });
+
+        // 从请求中获取用户 ID
+        const userId = req.user._id;
+
+        // 上传图片到 Cloudinary
+        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        // 更新用户的 profilePic 字段
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { profilePic: uploadResponse.secure_url },
+            { new: true } 
+        );
+        // 返回更新后的用户信息
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        console.log("Error in updateProfile controller: ", error.message);
+        res.status(500).json({ message: '服务器错误' });
+    }
+
+}
