@@ -41,6 +41,19 @@ export const sendMessage = async (req, res) => {
         const {id:receiverId} = req.params;
         // 从认证中间件 protectRoute 设置的 req.user 对象中获取发送者 ID
         const senderId = req.user._id;
+
+        if(!text && !image){
+            return res.status(400).json({message:"消息内容不能为空"});
+        }
+        if(senderId.toString() === receiverId.toString()){
+            return res.status(400).json({message:"不能给自己发送消息"});
+        }
+        const receiverUser = await User.findById(receiverId);
+        if(!receiverUser){
+            return res.status(404).json({message:"接收者不存在"});
+        }
+
+
         // 初始化图片 URL 为 null
         let imageUrl = null;
         if(image){
