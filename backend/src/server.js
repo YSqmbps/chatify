@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import cors from 'cors';
 
 import { ENV } from './lib/env.js';
 
@@ -20,6 +21,11 @@ const PORT = ENV.PORT || 3000;
 app.use(express.json());
 // 中间件解析 Cookie
 app.use(cookieParser());
+// 跨域资源共享配置
+app.use(cors({
+  origin: ENV.CLIENT_URL,
+  credentials: true,
+}));
 
 // 使用认证路由
 app.use('/api/auth', authRoutes);
