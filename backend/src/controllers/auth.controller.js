@@ -3,6 +3,14 @@ import bcrypt from 'bcryptjs';
 import { generateToken } from '../lib/utils.js';
 import { sendWelcomeEmail } from '../emails/emailHandlers.js';
 import { ENV } from '../lib/env.js';
+import { v2 as cloudinary } from 'cloudinary';
+
+// 配置Cloudinary
+cloudinary.config({
+  cloud_name: ENV.CLOUDINARY_CLOUD_NAME,
+  api_key: ENV.CLOUDINARY_API_KEY,
+  api_secret: ENV.CLOUDINARY_API_SECRET,
+});
 
 export const signup = async (req, res) => {
   const {fullName,email, password} = req.body;
@@ -103,26 +111,40 @@ export const logout = (_, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        // 
         const { profilePic } = req.body;
         if (!profilePic) return res.status(400).json({ message: 'Profile picture is required' });
 
         // 从请求中获取用户 ID
         const userId = req.user._id;
 
+        // 检查图片大小（限制为5MB）
+        const base64Data = profilePic.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        if (buffer.length > 5 * 1024 * 1024) {
+            return res.status(413).json({ message: '图片大小不能超过5MB' });
+        }
+
         // 上传图片到 Cloudinary
-        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+            folder: 'chatify-profiles',
+            transformation: [
+                { width: 200, height: 200, crop: 'fill' },
+                { quality: 'auto' }
+            ]
+        });
+        
         // 更新用户的 profilePic 字段
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { profilePic: uploadResponse.secure_url },
             { new: true } 
         );
-        // 返回更新后的用户信息
-        res.status(200).json(updatedUser);
+        
+        // 返回更新后的用户信息（排除密码）
+        const { password, ...userWithoutPassword } = updatedUser._doc;
+        res.status(200).json(userWithoutPassword);
     } catch (error) {
         console.log("Error in updateProfile controller: ", error.message);
         res.status(500).json({ message: '服务器错误' });
     }
-
 }
