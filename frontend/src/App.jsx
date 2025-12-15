@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router'
+import { BrowserRouter,Routes, Route, Navigate } from 'react-router'
 import SignUpPage from './pages/SignUpPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
@@ -24,8 +24,8 @@ function App() {
       <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
       <Routes>
         <Route path="/" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
-        <Route path="/signup" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-        <Route path="/login" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+        <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
       </Routes>
       <Toaster />
     </div>
